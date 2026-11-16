@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CrimpBlock - Tablas Multipresa de Escalada</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Three.js para el Visualizador 3D de archivos STL -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        .bg-gradient-dark { background: linear-gradient(180deg, #1b1f34 0%, #0a0e17 100%); }
+    </style>
+</head>
+<body class="bg-[#0a0e17] text-white min-h-screen">
+
+    <!-- VISTA 1: CATÁLOGO DE PRODUCTOS -->
+    <div id="product-view" class="bg-gradient-dark min-h-screen pb-12">
+        <div class="max-w-md mx-auto px-5 pt-8">
+            
+            <!-- Logo y Nombre de Marca -->
+            <div class="flex flex-col items-center justify-center mb-10">
+                <div class="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center mb-3 border border-white/20">
+                    <svg class="w-6 h-6 text-gray-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M8 3l4 8 5-5 5 15H2L8 3z"/>
+                        <path d="M4 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/>
+                    </svg>
+                </div>
+                <h2 class="text-xl font-bold tracking-widest text-gray-100 uppercase">CrimpBlock</h2>
+            </div>
+            
+            <div class="space-y-16">
+                <!-- PRODUCTO 1 -->
+                <div class="product-card">
+                    <div class="aspect-square bg-gray-800 rounded-xl overflow-hidden mb-6 relative flex items-center justify-center border-2 border-dashed border-gray-600">
+                        <div class="text-center p-4">
+                            <i data-lucide="image" class="w-12 h-12 text-gray-500 mx-auto mb-2"></i>
+                            <p class="text-sm text-gray-400">Espacio para tu foto del Modelo 1</p>
+                        </div>
+                    </div>
+                    
+                    <h1 class="text-2xl font-bold mb-4 leading-tight">Modelo 1 - Tabla Multipresa</h1>
+                    
+                    <div class="mb-4">
+                        <div class="text-[28px] font-bold text-emerald-400">55,00 €</div>
+                        <div class="text-xs text-gray-400">Envío gratuito a península</div>
+                    </div>
+                    
+                    <!-- Botones de Acción (Estética original Picybi oscura/verde) -->
+                    <div class="flex flex-col gap-3 mb-6">
+                        <button onclick="goToCheckout(0)" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors">
+                            <i data-lucide="shopping-bag" class="w-5 h-5"></i> Comprar
+                        </button>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button onclick="openStlViewer(0)" class="w-full bg-gray-800 hover:bg-gray-700 text-gray-300 font-medium py-3 px-3 rounded-lg flex items-center justify-center gap-2 transition-colors border border-gray-700 text-sm">
+                                <i data-lucide="box" class="w-4 h-4"></i> Visualizar STL
+                            </button>
+                            <a href="hangboard1.stl" download="CrimpBlock_Hangboard_1.stl" class="w-full bg-gray-800 hover:bg-gray-700 text-gray-300 font-medium py-3 px-3 rounded-lg flex items-center justify-center gap-2 transition-colors border border-gray-700 text-sm">
+                                <i data-lucide="download" class="w-4 h-4"></i> Descargar STL
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4 text-sm text-gray-200">
+                        <!-- Descripción pendiente -->
+                        <p class="text-gray-400 italic">[Espacio reservado para la descripción detallada del Modelo 1].</p>
+                        <div class="flex gap-2 pt-2">
+                            <span>📏</span>
+                            <p><strong>Dimensiones:</strong> 700 x 180 x 60 mm</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr class="border-gray-800">
+
+                <!-- PRODUCTO 2 -->
+                <div class="product-card">
+                    <div class="aspect-square bg-gray-800 rounded-xl overflow-hidden mb-6 relative flex items-center justify-center border-2 border-dashed border-gray-600">
+                        <div class="text-center p-4">
+                            <i data-lucide="image" class="w-12 h-12 text-gray-500 mx-auto mb-2"></i>
+                            <p class="text-sm text-gray-400">Espacio para tu foto del Modelo 2</p>
+                        </div>
+                    </div>
+                    
+                    <h1 class="text-2xl font-bold mb-4 leading-tight">Modelo 2 - Tabla Multipresa</h1>
+                    
+                    <div class="mb-4">
+                        <div class="text-[28px] font-bold text-emerald-400">55,00 €</div>
+                        <div class="text-xs text-gray-400">Envío gratuito a península</div>
+                    </div>
+                    
+                    <!-- Botones de Acción -->
+                    <div class="flex flex-col gap-3 mb-6">
+                        <button onclick="goToCheckout(1)" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors">
+                            <i data-lucide="shopping-bag" class="w-5 h-5"></i> Comprar
+                        </button>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button onclick="openStlViewer(1)" class="w-full bg-gray-800 hover:bg-gray-700 text-gray-300 font-medium py-3 px-3 rounded-lg flex items-center justify-center gap-2 transition-colors border border-gray-700 text-sm">
+                                <i data-lucide="box" class="w-4 h-4"></i> Visualizar STL
+                            </button>
+                            <a href="hangboard2.stl" download="CrimpBlock_Hangboard_2.stl" class="w-full bg-gray-800 hover:bg-gray-700 text-gray-300 font-medium py-3 px-3 rounded-lg flex items-center justify-center gap-2 transition-colors border border-gray-700 text-sm">
+                                <i data-lucide="download" class="w-4 h-4"></i> Descargar STL
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4 text-sm text-gray-200">
+                        <p class="text-gray-400 italic">[Espacio reservado para la descripción detallada del Modelo 2].</p>
+                        <div class="flex gap-2 pt-2">
+                            <span>📏</span>
+                            <p><strong>Dimensiones:</strong> 600 x 215 x 80 mm</p>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="border-gray-800">
+
+                <!-- PRODUCTO 3 -->
+                <div class="product-card">
+                    <div class="aspect-square bg-gray-800 rounded-xl overflow-hidden mb-6 relative flex items-center justify-center border-2 border-dashed border-gray-600">
+                        <div class="text-center p-4">
+                            <i data-lucide="image" class="w-12 h-12 text-gray-500 mx-auto mb-2"></i>
+                            <p class="text-sm text-gray-400">Espacio para tu foto del Modelo 3</p>
+                        </div>
+                    </div>
+                    
+                    <h1 class="text-2xl font-bold mb-4 leading-tight">Modelo 3 - Tabla Multipresa</h1>
+                    
+                    <div class="mb-4">
+                        <div class="text-[28px] font-bold text-emerald-400">55,00 €</div>
+                        <div class="text-xs text-gray-400">Envío gratuito a península</div>
+                    </div>
+                    
+                    <!-- Botones de Acción -->
+                    <div class="flex flex-col gap-3 mb-6">
+                        <button onclick="goToCheckout(2)" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors">
+                            <i data-lucide="shopping-bag" class="w-5 h-5"></i> Comprar
+                        </button>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button onclick="openStlViewer(2)" class="w-full bg-gray-800 hover:bg-gray-700 text-gray-300 font-medium py-3 px-3 rounded-lg flex items-center justify-center gap-2 transition-colors border border-gray-700 text-sm">
+                                <i data-lucide="box" class="w-4 h-4"></i> Visualizar STL
+                            </button>
+                            <a href="hangboard3.stl" download="CrimpBlock_Hangboard_3.stl" class="w-full bg-gray-800 hover:bg-gray-700 text-gray-300 font-medium py-3 px-3 rounded-lg flex items-center justify-center gap-2 transition-colors border border-gray-700 text-sm">
+                                <i data-lucide="download" class="w-4 h-4"></i> Descargar STL
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4 text-sm text-gray-200">
+                        <p class="text-gray-400 italic">[Espacio reservado para la descripción detallada del Modelo 3].</p>
+                        <div class="flex gap-2 pt-2">
+                            <span>📏</span>
+                            <p><strong>Dimensiones:</strong> 655 x 170 x 60 mm</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="mt-12 text-center text-xs text-gray-500 space-y-1 border-t border-gray-800 pt-6">
+                <p>Vendido y expedido por CrimpBlock</p>
+                <p>Pago seguro por Stripe (CB, PayPal, Amazon, Google, Apple...)</p>
+                <p>Expedición en 1 a 3 días hábiles</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: VISUALIZADOR 3D DE ARCHIVOS STL -->
+    <div id="stl-modal" class="fixed inset-0 z-50 hidden bg-black/90 flex flex-col items-center justify-center p-4 sm:p-8">
+        <div class="bg-[#111827] border border-gray-800 rounded-xl w-full max-w-4xl overflow-hidden shadow-2xl flex flex-col">
+            <!-- Cabecera del Modal -->
+            <div class="px-5 py-4 border-b border-gray-800 flex items-center justify-between bg-[#1f2937]">
+                <div class="flex items-center gap-2.5">
+                    <i data-lucide="box" class="w-5 h-5 text-emerald-400"></i>
+                    <h3 class="font-bold text-base text-white" id="modal-header-title">Visualizador 3D</h3>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="resetCamera()" class="text-gray-400 hover:text-white p-1 transition-colors" title="Centrar vista">
+                        <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
+                    </button>
+                    <button onclick="toggleWireframe()" class="text-gray-400 hover:text-white p-1 transition-colors" title="Modo Malla">
+                        <i data-lucide="grid" class="w-5 h-5"></i>
+                    </button>
+                    <div class="w-px h-5 bg-gray-700 mx-1"></div>
+                    <button onclick="closeStlViewer()" class="text-gray-400 hover:text-white p-1 transition-colors">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Contenedor del Canvas 3D -->
+            <div id="stl-canvas-container" class="w-full h-[50vh] sm:h-[60vh] relative bg-[#0a0e17] cursor-grab active:cursor-grabbing">
+                <!-- Indicador de Carga -->
+                <div id="stl-loading" class="absolute inset-0 flex flex-col items-center justify-center bg-[#0a0e17] z-10">
+                    <div class="w-8 h-8 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin mb-2"></div>
+                    <span id="stl-loading-text" class="text-xs text-emerald-300 font-medium">Cargando modelo 3D...</span>
+                </div>
+                <div class="absolute bottom-4 left-4 text-xs text-gray-400 bg-black/60 px-3 py-1.5 rounded pointer-events-none">
+                    <i data-lucide="mouse" class="w-4 h-4 inline-block mr-1"></i> Arrastra para rotar · Rueda/Pellizca para zoom · Clic derecho para mover
+                </div>
+            </div>
+            
+            <div class="px-5 py-4 bg-[#1f2937] border-t border-gray-800 flex justify-between items-center">
+                <span class="text-xs text-gray-400">Textura simulada: Madera de Tulipero / Haya</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- VISTA 2: PASARELA DE PAGO (ESTILO STRIPE) -->
+    <div id="checkout-view" class="bg-white min-h-screen hidden text-gray-900">
+        <!-- Cabecera Checkout -->
+        <div class="border-b border-gray-200 px-4 py-3 flex items-center justify-between sticky top-0 bg-white z-10">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="goBack()">
+                <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200 text-gray-600">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M8 3l4 8 5-5 5 15H2L8 3z"/>
+                    </svg>
+                </div>
+                <span class="font-medium text-sm">CrimpBlock</span>
+            </div>
+            <div class="text-sm text-gray-600 flex items-center gap-1 cursor-pointer" onclick="goBack()">
+                Volver <i data-lucide="chevron-down" class="w-4 h-4"></i>
+            </div>
+        </div>
+
+        <div class="max-w-md mx-auto px-4 pt-6 pb-12">
+            <!-- Resumen de Producto Checkout -->
+            <div class="flex flex-col items-center text-center mb-8">
+                <div class="w-24 h-24 rounded-lg bg-gray-100 border border-gray-200 overflow-hidden mb-4 flex items-center justify-center text-gray-400">
+                    <i data-lucide="image" class="w-8 h-8"></i>
+                </div>
+                <h2 class="text-lg text-gray-800 mb-1" id="checkout-model-title">Tabla multipresa de madera para escalada</h2>
+                <div class="text-3xl font-bold mb-2">55,00 €</div>
+                <div class="text-sm text-gray-500 mb-4">Tornillería estructural de alta resistencia incluida.</div>
+                
+                <div class="bg-gray-100 rounded-md px-3 py-1.5 flex items-center gap-2 text-sm">
+                    <span>Cant. 1</span>
+                    <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                </div>
+            </div>
+
+            <!-- Formulario de Envío (Estética Exacta Stripe) -->
+            <div class="mb-6">
+                <h3 class="text-lg font-medium mb-4">Información de envío</h3>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Correo electrónico</label>
+                    <input type="email" placeholder="correoelectrónico@ejemplo.com" class="w-full border border-gray-300 rounded-md p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Dirección de envío</label>
+                    <div class="border border-gray-300 rounded-md overflow-hidden">
+                        <input type="text" placeholder="Nombre completo" class="w-full p-3 text-sm border-b border-gray-300 focus:bg-gray-50 outline-none">
+                        <div class="w-full p-3 text-sm border-b border-gray-300 bg-gray-100 text-gray-600">España</div>
+                        <input type="text" placeholder="Introducir dirección" class="w-full p-3 text-sm border-b border-gray-300 focus:bg-gray-50 outline-none">
+                        <div class="flex items-center p-3 bg-white">
+                            <span class="text-lg mr-2">🇪🇸</span>
+                            <input type="tel" placeholder="+34 600 00 00 00" class="w-full text-sm outline-none">
+                            <i data-lucide="info" class="w-4 h-4 text-gray-400"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3 text-sm text-gray-500 underline decoration-dotted cursor-pointer hover:text-gray-700">
+                        Introduce la dirección de forma manual
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botón Pagar simulado -->
+            <button class="w-full bg-black text-white font-medium py-4 rounded-md mt-6 shadow-sm hover:bg-gray-800 transition-colors">
+                Pagar 55,00 €
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Inicializar Iconos
+        lucide.createIcons();
+
+        const HANGBOARD_MODELS = [
+            {
+                id: 0,
+                name: 'Modelo 1',
+                file: 'hangboard1.stl',
+            },
+            {
+                id: 1,
+                name: 'Modelo 2',
+                file: 'hangboard2.stl',
+            },
+            {
+                id: 2,
+                name: 'Modelo 3',
+                file: 'hangboard3.stl',
+            }
+        ];
+
+        // Lógica de navegación entre pantallas
+        function goToCheckout(index) {
+            document.getElementById('checkout-model-title').textContent = 'Tabla multipresa de madera para escalada (' + HANGBOARD_MODELS[index].name + ')';
+            document.getElementById('product-view').classList.add('hidden');
+            document.getElementById('checkout-view').classList.remove('hidden');
+            window.scrollTo(0, 0);
+        }
+
+        function goBack() {
+            document.getElementById('checkout-view').classList.add('hidden');
+            document.getElementById('product-view').classList.remove('hidden');
+            window.scrollTo(0, 0);
+        }
+
+        // ==========================================
+        // LÓGICA DEL VISUALIZADOR 3D DE ARCHIVOS STL
+        // ==========================================
+        let scene, camera, renderer, controls, currentMesh, isWireframe = false;
+        let viewerInitialized = false;
+        let loadedGeometriesCache = {};
+        let currentActiveModel = null;
+
+        function openStlViewer(index) {
+            currentActiveModel = HANGBOARD_MODELS[index];
+            document.getElementById('modal-header-title').textContent = 'Visualizador 3D — ' + currentActiveModel.name;
+            
+            document.getElementById('stl-modal').classList.remove('hidden');
+            if (!viewerInitialized) {
+                initStlViewer();
+                viewerInitialized = true;
+            } else {
+                onWindowResize();
+                loadSelectedStlIntoViewer();
+            }
+        }
+
+        function closeStlViewer() {
+            document.getElementById('stl-modal').classList.add('hidden');
+        }
+
+        function initStlViewer() {
+            const container = document.getElementById('stl-canvas-container');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(45, width / height, 1, 3000);
+            camera.position.set(0, 40, 480);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(width, height);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.shadowMap.enabled = true;
+            container.appendChild(renderer.domElement);
+
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+
+            // Iluminación para resaltar las regletas y hendiduras
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
+            scene.add(ambientLight);
+
+            const dirLight1 = new THREE.DirectionalLight(0xfff5e6, 0.85);
+            dirLight1.position.set(150, 250, 300);
+            scene.add(dirLight1);
+
+            const dirLight2 = new THREE.DirectionalLight(0x90b4ff, 0.35);
+            dirLight2.position.set(-200, -150, -200);
+            scene.add(dirLight2);
+
+            loadSelectedStlIntoViewer();
+
+            window.addEventListener('resize', onWindowResize);
+            animate();
+        }
+
+        function loadSelectedStlIntoViewer() {
+            const model = currentActiveModel;
+            const loadingEl = document.getElementById('stl-loading');
+            const loadingText = document.getElementById('stl-loading-text');
+
+            if (loadedGeometriesCache[model.file]) {
+                loadingEl.classList.add('hidden');
+                displayStlGeometry(loadedGeometriesCache[model.file]);
+                return;
+            }
+
+            loadingEl.classList.remove('hidden');
+            loadingText.textContent = "Cargando " + model.name + " (" + model.file + ")...";
+
+            const loader = new THREE.STLLoader();
+            loader.load(
+                model.file,
+                function (geometry) {
+                    loadedGeometriesCache[model.file] = geometry;
+                    loadingEl.classList.add('hidden');
+                    displayStlGeometry(geometry);
+                },
+                function (xhr) {
+                    if (xhr.lengthComputable) {
+                        const percent = Math.round((xhr.loaded / xhr.total) * 100);
+                        loadingText.textContent = "Cargando " + model.name + "... " + percent + "%";
+                    }
+                },
+                function () {
+                    loadingEl.classList.add('hidden');
+                    console.error("Error al cargar " + model.file);
+                }
+            );
+        }
+
+        function getWoodMaterial() {
+            return new THREE.MeshStandardMaterial({
+                color: 0xd8a977,
+                roughness: 0.55,
+                metalness: 0.05,
+                wireframe: isWireframe
+            });
+        }
+
+        function displayStlGeometry(geometry) {
+            if (currentMesh) {
+                scene.remove(currentMesh);
+            }
+
+            geometry.computeVertexNormals();
+            geometry.center();
+
+            const material = getWoodMaterial();
+            currentMesh = new THREE.Mesh(geometry, material);
+
+            // Ajustar escala automática
+            geometry.computeBoundingBox();
+            const box = geometry.boundingBox;
+            const size = new THREE.Vector3();
+            box.getSize(size);
+            const maxDim = Math.max(size.x, size.y, size.z);
+            if (maxDim > 0) {
+                const scale = 340 / maxDim;
+                currentMesh.scale.set(scale, scale, scale);
+            }
+
+            scene.add(currentMesh);
+            resetCamera();
+        }
+
+        function resetCamera() {
+            if (!camera || !controls) return;
+            camera.position.set(0, 40, 480);
+            controls.target.set(0, 0, 0);
+            controls.update();
+        }
+
+        function toggleWireframe() {
+            isWireframe = !isWireframe;
+            if (!currentMesh) return;
+            currentMesh.traverse(function (child) {
+                if (child.isMesh && child.material) {
+                    child.material.wireframe = isWireframe;
+                }
+            });
+        }
+
+        function onWindowResize() {
+            if (!renderer || !camera) return;
+            const container = document.getElementById('stl-canvas-container');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            if (controls) controls.update();
+            if (renderer && scene && camera) {
+                renderer.render(scene, camera);
+            }
+        }
+    </script>
+</body>
+</html>
