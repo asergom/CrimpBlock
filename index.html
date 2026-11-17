@@ -1,490 +1,249 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CrimpBlock - Tablas Multipresa de Escalada</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Three.js para el Visualizador 3D de archivos STL -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-        .bg-gradient-dark { background: linear-gradient(180deg, #1b1f34 0%, #0a0e17 100%); }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catálogo 3D · Visor STL</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #f6f9fc;
+      color: #1a1f36;
+    }
+    h1, h2, h3 { margin: 0 0 12px; }
+    h2 { font-size: 22px; }
+    h3 { font-size: 16px; margin-top: 16px; }
+    p { line-height: 1.5; }
+    .hidden { display: none !important; }
+
+    header {
+      background: #fff;
+      border-bottom: 1px solid #e3e8ee;
+      padding: 14px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    #home-link { font-size: 20px; cursor: pointer; margin: 0; }
+    main { max-width: 1100px; margin: 0 auto; padding: 24px; }
+
+    button { font: inherit; cursor: pointer; }
+    .btn-ghost {
+      background: #fff;
+      color: #425466;
+      border: 1px solid #d8dee4;
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 14px;
+    }
+    .btn-ghost:hover { background: #f6f9fc; }
+    .primary {
+      background: #635bff;
+      color: #fff;
+      border: 0;
+      border-radius: 6px;
+      padding: 12px;
+      font-weight: 600;
+      width: 100%;
+      font-size: 15px;
+      margin-top: 8px;
+    }
+    .primary:hover { background: #5249e6; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+    .card {
+      background: #fff;
+      border: 1px solid #e3e8ee;
+      border-radius: 10px;
+      padding: 16px;
+      transition: box-shadow 0.2s;
+    }
+    .card:hover { box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08); }
+    .thumb {
+      height: 160px;
+      background: #eef2f7;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #8792a2;
+      font-size: 13px;
+    }
+    .card h3 { margin-top: 0; }
+    .card p { font-size: 14px; color: #697386; min-height: 40px; }
+    .price { font-weight: 600; color: #635bff; font-size: 18px; }
+
+    .product-layout { display: grid; grid-template-columns: 1fr 320px; gap: 24px; margin-top: 16px; }
+    @media (max-width: 800px) {
+      .product-layout, .checkout-layout { grid-template-columns: 1fr !important; }
+    }
+    .viewer-wrap {
+      position: relative;
+      background: #fff;
+      border: 1px solid #e3e8ee;
+      border-radius: 10px;
+      height: 520px;
+      overflow: hidden;
+    }
+    #viewer { position: absolute; inset: 0; }
+    #viewer canvas { display: block; }
+    .toolbar {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      display: flex;
+      gap: 8px;
+      z-index: 2;
+      flex-wrap: wrap;
+    }
+    .file-btn { display: inline-block; }
+    .loading {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #697386;
+      background: rgba(255, 255, 255, 0.75);
+      z-index: 3;
+      font-size: 14px;
+    }
+    .hint { font-size: 13px; color: #697386; margin-top: 8px; }
+    .panel {
+      background: #fff;
+      border: 1px solid #e3e8ee;
+      border-radius: 10px;
+      padding: 20px;
+    }
+
+    .checkout-layout { display: grid; grid-template-columns: 1fr 360px; gap: 24px; margin-top: 16px; }
+    label { display: block; font-size: 14px; color: #425466; margin-bottom: 10px; }
+    input {
+      display: block;
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #d8dee4;
+      border-radius: 6px;
+      font-size: 15px;
+      margin-top: 4px;
+    }
+    input:focus { outline: 2px solid #b6b1ff; border-color: #635bff; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .summary-line { display: flex; justify-content: space-between; margin: 8px 0; font-size: 14px; }
+    .total { font-weight: 700; border-top: 1px solid #e3e8ee; padding-top: 12px; margin-top: 12px; font-size: 16px; }
+    .error { color: #cd3d64; font-size: 14px; min-height: 18px; }
+    .secure { font-size: 12px; color: #697386; text-align: center; margin-top: 12px; }
+    .center { text-align: center; max-width: 480px; margin: 40px auto; }
+  </style>
 </head>
-<body class="bg-[#0a0e17] text-white min-h-screen">
+<body>
 
-    <!-- VISTA 1: CATÁLOGO DE PRODUCTOS -->
-    <div id="product-view" class="bg-gradient-dark min-h-screen pb-12">
-        <div class="max-w-md mx-auto px-5 pt-8">
-            
-            <!-- Logo y Nombre de Marca -->
-            <div class="flex flex-col items-center justify-center mb-10">
-                <div class="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center mb-3 border border-white/20">
-                    <svg class="w-6 h-6 text-gray-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M8 3l4 8 5-5 5 15H2L8 3z"/>
-                        <path d="M4 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/>
-                    </svg>
-                </div>
-                <h2 class="text-xl font-bold tracking-widest text-gray-100 uppercase">CrimpBlock</h2>
-            </div>
-            
-            <div class="space-y-16">
-                <!-- PRODUCTO 1 -->
-                <div class="product-card">
-                    <div class="aspect-square rounded-xl overflow-hidden mb-6 relative flex items-center justify-center border border-gray-700 bg-gray-900">
-                        <img src="hangboard1.jpg" alt="Modelo 1 - CrimpBlock" class="w-full h-full object-cover">
-                    </div>
-                    
-                    <h1 class="text-2xl font-bold mb-4 leading-tight">Modelo 1 - Tabla Multipresa</h1>
-                    
-                    <div class="mb-4">
-                        <div class="text-[28px] font-bold text-emerald-400">55,00 €</div>
-                        <div class="text-xs text-gray-400">Envío gratuito a península</div>
-                    </div>
-                    
-                    <div class="flex flex-col gap-3 mb-6">
-                        <button onclick="goToCheckout(0)" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors">
-                            <i data-lucide="shopping-bag" class="w-5 h-5"></i> Comprar
-                        </button>
-                        <div class="grid grid-cols-2 gap-3">
-                            <button onclick="openStlViewer(0)" class="w-full bg-gray-800 hover:bg-gray-700 text-gray-300 font-medium py-3 px-3 rounded-lg flex items-center justify-center gap-2 transition-colors border border-gray-700 text-sm">
-                                <i data-lucide="box" class="w-4 h-4"></i> Visualizar STL
-                            </button>
-                            <a href="hangboard1.stl" download="CrimpBlock_Hangboard_1.stl" class="w-full bg-gray-800 hover:bg-gray-700 text-gray-300 font-medium py-3 px-3 rounded-lg flex items-center justify-center gap-2 transition-colors border border-gray-700 text-sm">
-                                <i data-lucide="download" class="w-4 h-4"></i> Descargar STL
-                            </a>
-                        </div>
-                    </div>
-                    
-                    <div class="space-y-4 text-sm text-gray-200">
-                        <p class="text-gray-300 leading-relaxed mb-4">La multipresa definitiva para el entrenamiento metódico. Diseñada con un sistema clásico de triple banda, este modelo ofrece una progresión perfecta para trabajar desde el acondicionamiento inicial hasta la fuerza máxima de dedos. Su distribución simétrica y cantos esculpidos con precisión garantizan la máxima comodidad y cuidado de las poleas durante las sesiones más exigentes.</p>
-                        <ul class="list-disc pl-5 space-y-2 text-gray-400 mb-4">
-                            <li><strong class="text-gray-300">Top de calentamiento:</strong> Cazos superiores generosos y planos inclinados, ideales para activar la musculatura y hacer dominadas.</li>
-                            <li><strong class="text-gray-300">Regletas graduadas:</strong> Tres filas con niveles de profundidad decreciente para medir tu evolución semana a semana.</li>
-                            <li><strong class="text-gray-300">Aislamiento central:</strong> Bolsillos profundos e intermedios en el eje central para trabajar bidedos y aislar agarres con total simetría.</li>
-                            <li><strong class="text-gray-300">Perfil ergonómico:</strong> Radios de curvatura suavizados al milímetro en cada canto para proteger tu piel y reducir el estrés articular.</li>
-                        </ul>
-                        <div class="flex gap-2 pt-2">
-                            <span>📏</span>
-                            <p><strong>Dimensiones:</strong> 700 x 180 x 60 mm</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <hr class="border-gray-800">
+<header>
+  <h1 id="home-link">Catálogo 3D</h1>
+  <button id="cart-btn" class="btn-ghost">Carrito (<span id="cart-count">0</span>)</button>
+</header>
 
-                <!-- PRODUCTO 2 -->
-                <div class="product-card">
-                    <div class="aspect-square rounded-xl overflow-hidden mb-6 relative flex items-center justify-center border border-gray-700 bg-gray-900">
-                        <img src="hangboard2.jpg" alt="Modelo 2 - CrimpBlock" class="w-full h-full object-cover">
-                    </div>
-                    
-                    <h1 class="text-2xl font-bold mb-4 leading-tight">Modelo 2 - Tabla Multipresa</h1>
-                    
-                    <div class="mb-4">
-                        <div class="text-[28px] font-bold text-emerald-400">55,00 €</div>
-                        <div class="text-xs text-gray-400">Envío gratuito a península</div>
-                    </div>
-                    
-                    <div class="flex flex-col gap-3 mb-6">
-                        <button onclick="goToCheckout(1)" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors">
-                            <i data-lucide="shopping-bag" class="w-5 h-5"></i> Comprar
-                        </button>
-                        <div class="grid grid-cols-2 gap-3">
-                            <button onclick="openStlViewer(1)" class="w-full bg-gray-800 hover:bg-gray-700 text-gray-300 font-medium py-3 px-3 rounded-lg flex items-center justify-center gap-2 transition-colors border border-gray-700 text-sm">
-                                <i data-lucide="box" class="w-4 h-4"></i> Visualizar STL
-                            </button>
-                            <a href="hangboard2.stl" download="CrimpBlock_Hangboard_2.stl" class="w-full bg-gray-800 hover:bg-gray-700 text-gray-300 font-medium py-3 px-3 rounded-lg flex items-center justify-center gap-2 transition-colors border border-gray-700 text-sm">
-                                <i data-lucide="download" class="w-4 h-4"></i> Descargar STL
-                            </a>
-                        </div>
-                    </div>
-                    
-                    <div class="space-y-4 text-sm text-gray-200">
-                        <p class="text-gray-300 leading-relaxed mb-4">Un diseño compacto y agresivo enfocado a la máxima optimización del espacio y la ergonomía de los bolsillos profundos. Su estructura escalonada en bloques independientes permite una colocación natural de las manos, reduciendo la torsión de muñecas y focalizando toda la tensión en los antebrazos y la fuerza de suspensión pura.</p>
-                        <ul class="list-disc pl-5 space-y-2 text-gray-400 mb-4">
-                            <li><strong class="text-gray-300">Bolsillos de gran confort:</strong> Cavidades horizontales extragrandes y rehundidas con bordes generosamente redondeados.</li>
-                            <li><strong class="text-gray-300">Acceso central despejado:</strong> Canal central optimizado para tracciones unilaterales y bloqueos en suspensión.</li>
-                            <li><strong class="text-gray-300">Bloque compacto:</strong> Estructura más recogida pero con mayor grosor, perfecta para espacios reducidos en casa o paneleras de entrenamiento personal.</li>
-                            <li><strong class="text-gray-300">Tacto de madera noble:</strong> Mecanizado impecable que absorbe el magnesio sin resecar ni dañar la yema de los dedos.</li>
-                        </ul>
-                        <div class="flex gap-2 pt-2">
-                            <span>📏</span>
-                            <p><strong>Dimensiones:</strong> 600 x 215 x 80 mm</p>
-                        </div>
-                    </div>
-                </div>
+<main>
+  <!-- CATÁLOGO -->
+  <section id="view-catalog">
+    <h2>Productos</h2>
+    <div class="grid" id="product-grid"></div>
+  </section>
 
-                <hr class="border-gray-800">
+  <!-- PRODUCTO + VISOR 3D -->
+  <section id="view-product" class="hidden">
+    <button class="btn-ghost" id="back-to-catalog">← Volver al catálogo</button>
 
-                <!-- PRODUCTO 3 -->
-                <div class="product-card">
-                    <div class="aspect-square rounded-xl overflow-hidden mb-6 relative flex items-center justify-center border border-gray-700 bg-gray-900">
-                        <img src="hangboard3.jpg" alt="Modelo 3 - CrimpBlock" class="w-full h-full object-cover">
-                    </div>
-                    
-                    <h1 class="text-2xl font-bold mb-4 leading-tight">Modelo 3 - Tabla Multipresa</h1>
-                    
-                    <div class="mb-4">
-                        <div class="text-[28px] font-bold text-emerald-400">55,00 €</div>
-                        <div class="text-xs text-gray-400">Envío gratuito a península</div>
-                    </div>
-                    
-                    <div class="flex flex-col gap-3 mb-6">
-                        <button onclick="goToCheckout(2)" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors">
-                            <i data-lucide="shopping-bag" class="w-5 h-5"></i> Comprar
-                        </button>
-                        <div class="grid grid-cols-2 gap-3">
-                            <button onclick="openStlViewer(2)" class="w-full bg-gray-800 hover:bg-gray-700 text-gray-300 font-medium py-3 px-3 rounded-lg flex items-center justify-center gap-2 transition-colors border border-gray-700 text-sm">
-                                <i data-lucide="box" class="w-4 h-4"></i> Visualizar STL
-                            </button>
-                            <a href="hangboard3.stl" download="CrimpBlock_Hangboard_3.stl" class="w-full bg-gray-800 hover:bg-gray-700 text-gray-300 font-medium py-3 px-3 rounded-lg flex items-center justify-center gap-2 transition-colors border border-gray-700 text-sm">
-                                <i data-lucide="download" class="w-4 h-4"></i> Descargar STL
-                            </a>
-                        </div>
-                    </div>
-                    
-                    <div class="space-y-4 text-sm text-gray-200">
-                        <p class="text-gray-300 leading-relaxed mb-4">La herramienta definitiva para escaladores avanzados y de élite. Su versátil matriz de micro-agarres, monodedos, bidedos y regletas técnicas ofrece infinitas combinaciones de entrenamiento específico. Diseñada para llevar tus límites de fuerza de contacto y resistencia a un nivel superior.</p>
-                        <ul class="list-disc pl-5 space-y-2 text-gray-400 mb-4">
-                            <li><strong class="text-gray-300">Matriz de bolsillos técnicos:</strong> Amplia variedad de agujeros individuales y dobles para dedos con diferentes profundidades y radios.</li>
-                            <li><strong class="text-gray-300">Regletas de alta exigencia:</strong> Cantos estrechos orientados a la escalada en roca más técnica y demandante.</li>
-                            <li><strong class="text-gray-300">Diseño escalonado piramidal:</strong> Permite una visibilidad perfecta de los agarres y evita el roce de los nudillos durante las suspensiones en regleta pequeña.</li>
-                            <li><strong class="text-gray-300">Alto rendimiento profesional:</strong> El estándar elegido por escaladores de vía y bloque que buscan un desglose exhaustivo de la fuerza por falanges.</li>
-                        </ul>
-                        <div class="flex gap-2 pt-2">
-                            <span>📏</span>
-                            <p><strong>Dimensiones:</strong> 655 x 170 x 60 mm</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Footer -->
-            <div class="mt-12 text-center text-xs text-gray-500 space-y-1 border-t border-gray-800 pt-6">
-                <p>Vendido y expedido por CrimpBlock</p>
-                <p>Pago seguro por Stripe (CB, PayPal, Amazon, Google, Apple...)</p>
-                <p>Expedición en 1 a 3 días hábiles</p>
-            </div>
+    <div class="product-layout">
+      <div>
+        <div class="viewer-wrap">
+          <div class="toolbar">
+            <button class="btn-ghost" id="btn-reset">Restablecer vista</button>
+            <button class="btn-ghost" id="btn-wire">Wireframe: off</button>
+            <label class="btn-ghost file-btn">
+              Cargar STL
+              <input type="file" id="file-input" accept=".stl" hidden>
+            </label>
+          </div>
+          <div id="viewer"></div>
+          <div class="loading hidden" id="loading">Cargando modelo…</div>
         </div>
+        <p class="hint">
+          Arrastra con el botón izquierdo para rotar sin límites (incluido el giro vertical completo).
+          Rueda o botón central para zoom. Botón derecho para desplazar.
+        </p>
+      </div>
+
+      <aside class="panel">
+        <h2 id="p-name"></h2>
+        <p id="p-desc"></p>
+        <p class="price" id="p-price"></p>
+        <button class="primary" id="btn-add">Añadir al carrito</button>
+      </aside>
     </div>
+  </section>
 
-    <!-- MODAL: VISUALIZADOR 3D DE ARCHIVOS STL -->
-    <div id="stl-modal" class="fixed inset-0 z-50 hidden bg-black/90 flex flex-col items-center justify-center p-4 sm:p-8">
-        <div class="bg-[#111827] border border-gray-800 rounded-xl w-full max-w-4xl overflow-hidden shadow-2xl flex flex-col">
-            <!-- Cabecera del Modal -->
-            <div class="px-5 py-4 border-b border-gray-800 flex items-center justify-between bg-[#1f2937]">
-                <div class="flex items-center gap-2.5">
-                    <i data-lucide="box" class="w-5 h-5 text-emerald-400"></i>
-                    <h3 class="font-bold text-base text-white" id="modal-header-title">Visualizador 3D</h3>
-                </div>
-                <div class="flex items-center gap-3">
-                    <button onclick="resetCamera()" class="text-gray-400 hover:text-white p-1 transition-colors" title="Centrar vista">
-                        <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
-                    </button>
-                    <button onclick="toggleWireframe()" class="text-gray-400 hover:text-white p-1 transition-colors" title="Modo Malla">
-                        <i data-lucide="grid" class="w-5 h-5"></i>
-                    </button>
-                    <div class="w-px h-5 bg-gray-700 mx-1"></div>
-                    <button onclick="closeStlViewer()" class="text-gray-400 hover:text-white p-1 transition-colors">
-                        <i data-lucide="x" class="w-6 h-6"></i>
-                    </button>
-                </div>
-            </div>
+  <!-- CHECKOUT -->
+  <section id="view-checkout" class="hidden">
+    <button class="btn-ghost" id="back-from-checkout">← Seguir comprando</button>
+    <h2 style="margin-top:16px">Finalizar compra</h2>
 
-            <!-- Contenedor del Canvas 3D -->
-            <div id="stl-canvas-container" class="w-full h-[50vh] sm:h-[60vh] relative bg-[#0a0e17] cursor-grab active:cursor-grabbing">
-                <!-- Indicador de Carga -->
-                <div id="stl-loading" class="absolute inset-0 flex flex-col items-center justify-center bg-[#0a0e17] z-10">
-                    <div class="w-8 h-8 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin mb-2"></div>
-                    <span id="stl-loading-text" class="text-xs text-emerald-300 font-medium">Cargando modelo 3D...</span>
-                </div>
-                <div class="absolute bottom-4 left-4 text-xs text-gray-400 bg-black/60 px-3 py-1.5 rounded pointer-events-none">
-                    <i data-lucide="mouse" class="w-4 h-4 inline-block mr-1"></i> Arrastra para rotar · Rueda/Pellizca para zoom · Clic derecho para mover
-                </div>
-            </div>
-            
-            <div class="px-5 py-4 bg-[#1f2937] border-t border-gray-800 flex justify-between items-center">
-                <span class="text-xs text-gray-400">Textura simulada: Madera de Tulipero / Haya</span>
-            </div>
+    <div class="checkout-layout">
+      <form class="panel" id="checkout-form" novalidate>
+        <h3>Datos de contacto</h3>
+        <label>Email
+          <input type="email" id="email" autocomplete="email" required>
+        </label>
+
+        <h3>Pago</h3>
+        <label>Nombre en la tarjeta
+          <input type="text" id="cc-name" autocomplete="cc-name" required>
+        </label>
+        <label>Número de tarjeta
+          <input type="text" id="cc-number" inputmode="numeric" placeholder="4242 4242 4242 4242" autocomplete="cc-number" required>
+        </label>
+        <div class="row">
+          <label>Caducidad
+            <input type="text" id="cc-exp" placeholder="MM/AA" autocomplete="cc-exp" required>
+          </label>
+          <label>CVC
+            <input type="text" id="cc-cvc" inputmode="numeric" maxlength="4" autocomplete="cc-csc" required>
+          </label>
         </div>
+
+        <p class="error" id="checkout-error"></p>
+        <button class="primary" type="submit" id="pay-btn">Pagar</button>
+        <p class="secure">Pago simulado. En producción, los datos de la tarjeta deben enviarse con Stripe Elements, nunca a tu servidor.</p>
+      </form>
+
+      <aside class="panel">
+        <h3 style="margin-top:0">Resumen del pedido</h3>
+        <div id="summary"></div>
+        <div class="summary-line total">
+          <span>Total</span>
+          <span id="summary-total"></span>
+        </div>
+      </aside>
     </div>
+  </section>
 
-    <!-- VISTA 2: PASARELA DE PAGO (ESTILO STRIPE) -->
-    <div id="checkout-view" class="bg-white min-h-screen hidden text-gray-900">
-        <!-- Cabecera Checkout -->
-        <div class="border-b border-gray-200 px-4 py-3 flex items-center justify-between sticky top-0 bg-white z-10">
-            <div class="flex items-center gap-2 cursor-pointer" onclick="goBack()">
-                <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200 text-gray-600">
-                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M8 3l4 8 5-5 5 15H2L8 3z"/>
-                    </svg>
-                </div>
-                <span class="font-medium text-sm">CrimpBlock</span>
-            </div>
-            <div class="text-sm text-gray-600 flex items-center gap-1 cursor-pointer" onclick="goBack()">
-                Volver <i data-lucide="chevron-down" class="w-4 h-4"></i>
-            </div>
-        </div>
-
-        <div class="max-w-md mx-auto px-4 pt-6 pb-12">
-            <!-- Resumen de Producto Checkout -->
-            <div class="flex flex-col items-center text-center mb-8">
-                <div class="w-24 h-24 rounded-lg bg-gray-100 border border-gray-200 overflow-hidden mb-4 flex items-center justify-center text-gray-400">
-                    <i data-lucide="image" class="w-8 h-8"></i>
-                </div>
-                <h2 class="text-lg text-gray-800 mb-1" id="checkout-model-title">Tabla multipresa de madera para escalada</h2>
-                <div class="text-3xl font-bold mb-2">55,00 €</div>
-                <div class="text-sm text-gray-500 mb-4">Tornillería estructural de alta resistencia incluida.</div>
-                
-                <div class="bg-gray-100 rounded-md px-3 py-1.5 flex items-center gap-2 text-sm">
-                    <span>Cant. 1</span>
-                    <i data-lucide="chevron-down" class="w-4 h-4"></i>
-                </div>
-            </div>
-
-            <!-- Formulario de Envío (Estética Exacta Stripe) -->
-            <div class="mb-6">
-                <h3 class="text-lg font-medium mb-4">Información de envío</h3>
-                
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Correo electrónico</label>
-                    <input type="email" placeholder="correoelectrónico@ejemplo.com" class="w-full border border-gray-300 rounded-md p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Dirección de envío</label>
-                    <div class="border border-gray-300 rounded-md overflow-hidden">
-                        <input type="text" placeholder="Nombre completo" class="w-full p-3 text-sm border-b border-gray-300 focus:bg-gray-50 outline-none">
-                        <div class="w-full p-3 text-sm border-b border-gray-300 bg-gray-100 text-gray-600">España</div>
-                        <input type="text" placeholder="Introducir dirección" class="w-full p-3 text-sm border-b border-gray-300 focus:bg-gray-50 outline-none">
-                        <div class="flex items-center p-3 bg-white">
-                            <span class="text-lg mr-2">🇪🇸</span>
-                            <input type="tel" placeholder="+34 600 00 00 00" class="w-full text-sm outline-none">
-                            <i data-lucide="info" class="w-4 h-4 text-gray-400"></i>
-                        </div>
-                    </div>
-                    <div class="mt-3 text-sm text-gray-500 underline decoration-dotted cursor-pointer hover:text-gray-700">
-                        Introduce la dirección de forma manual
-                    </div>
-                </div>
-            </div>
-
-            <!-- Botón Pagar simulado -->
-            <button class="w-full bg-black text-white font-medium py-4 rounded-md mt-6 shadow-sm hover:bg-gray-800 transition-colors">
-                Pagar 55,00 €
-            </button>
-        </div>
+  <!-- ÉXITO -->
+  <section id="view-success" class="hidden">
+    <div class="panel center">
+      <h2>¡Pago completado!</h2>
+      <p>Gracias por tu compra. Recibirás la confirmación en tu correo electrónico.</p>
+      <button class="primary" id="btn-success-home">Volver a la tienda</button>
     </div>
+  </section>
+</main>
 
-    <script>
-        // Inicializar Iconos
-        lucide.createIcons();
-
-        const HANGBOARD_MODELS = [
-            {
-                id: 0,
-                name: 'Modelo 1',
-                file: 'hangboard1.stl',
-            },
-            {
-                id: 1,
-                name: 'Modelo 2',
-                file: 'hangboard2.stl',
-            },
-            {
-                id: 2,
-                name: 'Modelo 3',
-                file: 'hangboard3.stl',
-            }
-        ];
-
-        // Lógica de navegación entre pantallas
-        function goToCheckout(index) {
-            document.getElementById('checkout-model-title').textContent = 'Tabla multipresa de madera para escalada (' + HANGBOARD_MODELS[index].name + ')';
-            document.getElementById('product-view').classList.add('hidden');
-            document.getElementById('checkout-view').classList.remove('hidden');
-            window.scrollTo(0, 0);
-        }
-
-        function goBack() {
-            document.getElementById('checkout-view').classList.add('hidden');
-            document.getElementById('product-view').classList.remove('hidden');
-            window.scrollTo(0, 0);
-        }
-
-        // ==========================================
-        // LÓGICA DEL VISUALIZADOR 3D DE ARCHIVOS STL
-        // ==========================================
-        let scene, camera, renderer, controls, currentMesh, isWireframe = false;
-        let viewerInitialized = false;
-        let loadedGeometriesCache = {};
-        let currentActiveModel = null;
-
-        function openStlViewer(index) {
-            currentActiveModel = HANGBOARD_MODELS[index];
-            document.getElementById('modal-header-title').textContent = 'Visualizador 3D — ' + currentActiveModel.name;
-            
-            document.getElementById('stl-modal').classList.remove('hidden');
-            if (!viewerInitialized) {
-                initStlViewer();
-                viewerInitialized = true;
-            } else {
-                onWindowResize();
-                loadSelectedStlIntoViewer();
-            }
-        }
-
-        function closeStlViewer() {
-            document.getElementById('stl-modal').classList.add('hidden');
-        }
-
-        function initStlViewer() {
-            const container = document.getElementById('stl-canvas-container');
-            const width = container.clientWidth;
-            const height = container.clientHeight;
-
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(45, width / height, 1, 3000);
-            camera.position.set(0, 40, 480);
-
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-            renderer.setSize(width, height);
-            renderer.setPixelRatio(window.devicePixelRatio);
-            renderer.shadowMap.enabled = true;
-            container.appendChild(renderer.domElement);
-
-            controls = new THREE.OrbitControls(camera, renderer.domElement);
-            controls.enableDamping = true;
-            controls.dampingFactor = 0.05;
-            controls.target.set(0, 0, 0); // NUEVO: fija el punto de órbita en el centro de la escena (el modelo ya se centra con geometry.center())
-
-            // Iluminación para resaltar las regletas y hendiduras
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
-            scene.add(ambientLight);
-
-            const dirLight1 = new THREE.DirectionalLight(0xfff5e6, 0.85);
-            dirLight1.position.set(150, 250, 300);
-            scene.add(dirLight1);
-
-            const dirLight2 = new THREE.DirectionalLight(0x90b4ff, 0.35);
-            dirLight2.position.set(-200, -150, -200);
-            scene.add(dirLight2);
-
-            loadSelectedStlIntoViewer();
-
-            window.addEventListener('resize', onWindowResize);
-            animate();
-        }
-
-        function loadSelectedStlIntoViewer() {
-            const model = currentActiveModel;
-            const loadingEl = document.getElementById('stl-loading');
-            const loadingText = document.getElementById('stl-loading-text');
-
-            if (loadedGeometriesCache[model.file]) {
-                loadingEl.classList.add('hidden');
-                displayStlGeometry(loadedGeometriesCache[model.file]);
-                return;
-            }
-
-            loadingEl.classList.remove('hidden');
-            loadingText.textContent = "Cargando " + model.name + " (" + model.file + ")...";
-
-            const loader = new THREE.STLLoader();
-            loader.load(
-                model.file,
-                function (geometry) {
-                    loadedGeometriesCache[model.file] = geometry;
-                    loadingEl.classList.add('hidden');
-                    displayStlGeometry(geometry);
-                },
-                function (xhr) {
-                    if (xhr.lengthComputable) {
-                        const percent = Math.round((xhr.loaded / xhr.total) * 100);
-                        loadingText.textContent = "Cargando " + model.name + "... " + percent + "%";
-                    }
-                },
-                function () {
-                    loadingEl.classList.add('hidden');
-                    console.error("Error al cargar " + model.file);
-                }
-            );
-        }
-
-        function getWoodMaterial() {
-            return new THREE.MeshStandardMaterial({
-                color: 0xd8a977,
-                roughness: 0.55,
-                metalness: 0.05,
-                wireframe: isWireframe
-            });
-        }
-
-        function displayStlGeometry(geometry) {
-            if (currentMesh) {
-                scene.remove(currentMesh);
-            }
-
-            geometry.computeVertexNormals();
-            geometry.center();
-
-            const material = getWoodMaterial();
-            currentMesh = new THREE.Mesh(geometry, material);
-
-            // Ajustar escala automática
-            geometry.computeBoundingBox();
-            const box = geometry.boundingBox;
-            const size = new THREE.Vector3();
-            box.getSize(size);
-            const maxDim = Math.max(size.x, size.y, size.z);
-            if (maxDim > 0) {
-                const scale = 340 / maxDim;
-                currentMesh.scale.set(scale, scale, scale);
-            }
-
-            scene.add(currentMesh);
-            resetCamera();
-        }
-
-        function resetCamera() {
-            if (!camera || !controls) return;
-            camera.position.set(0, 40, 480);
-            controls.target.set(0, 0, 0);
-            controls.update();
-        }
-
-        function toggleWireframe() {
-            isWireframe = !isWireframe;
-            if (!currentMesh) return;
-            currentMesh.traverse(function (child) {
-                if (child.isMesh && child.material) {
-                    child.material.wireframe = isWireframe;
-                }
-            });
-        }
-
-        function onWindowResize() {
-            if (!renderer || !camera) return;
-            const container = document.getElementById('stl-canvas-container');
-            const width = container.clientWidth;
-            const height = container.clientHeight;
-            camera.aspect = width / height;
-            camera.updateProjectionMatrix();
-            renderer.setSize(width, height);
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-            if (controls) controls.update();
-            if (renderer && scene && camera) {
-                renderer.render(scene, camera);
-            }
-        }
-    </script>
-</body>
-</html>
+<!-- Three.js r128 + TrackballControls + STLLoader (en este orden) -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TrackballControls.js"></script>
+<script src="https://
