@@ -80,8 +80,9 @@
     .price { font-weight: 600; color: #635bff; font-size: 18px; }
 
     .product-layout { display: grid; grid-template-columns: 1fr 320px; gap: 24px; margin-top: 16px; }
+    .checkout-layout { display: grid; grid-template-columns: 1fr 360px; gap: 24px; margin-top: 16px; }
     @media (max-width: 800px) {
-      .product-layout, .checkout-layout { grid-template-columns: 1fr !important; }
+      .product-layout, .checkout-layout { grid-template-columns: 1fr; }
     }
     .viewer-wrap {
       position: relative;
@@ -102,7 +103,7 @@
       z-index: 2;
       flex-wrap: wrap;
     }
-    .file-btn { display: inline-block; }
+    .file-btn { display: inline-block; margin: 0; }
     .loading {
       position: absolute;
       inset: 0;
@@ -122,7 +123,6 @@
       padding: 20px;
     }
 
-    .checkout-layout { display: grid; grid-template-columns: 1fr 360px; gap: 24px; margin-top: 16px; }
     label { display: block; font-size: 14px; color: #425466; margin-bottom: 10px; }
     input {
       display: block;
@@ -246,4 +246,241 @@
 <!-- Three.js r128 + TrackballControls + STLLoader (en este orden) -->
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TrackballControls.js"></script>
-<script src="https://
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
+
+<script>
+const PRODUCTS = [
+  { id: 'p1', name: 'Engranaje helicoidal', priceCents: 1250, description: 'Engranaje de 60 dientes, listo para imprimir en PLA o PETG.', stl: 'models/gear.stl', color: 0x635bff },
+  { id: 'p2', name: 'Soporte para auriculares', priceCents: 1800, description: 'Soporte de sobremesa con base estable y diseño compacto.', stl: 'models/headphone-stand.stl', color: 0x0a2540 },
+  { id: 'p3', name: 'Figura articulada', priceCents: 2400, description: 'Figura articulada con piezas móviles, sin soportes.', stl: 'models/figure.stl', color: 0x00a3c4 }
+];
+
+const fmt = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' });
+const euros = cents => fmt.format(cents / 100);
+const $ = id => document.getElementById(id);
+
+// ---------- Carrito ----------
+let cart = {};
+let currentProduct = null;
+
+function cartItems() {
+  return Object.entries(cart)
+    .filter(([, qty]) => qty > 0)
+    .map(([id, qty]) => ({ product: PRODUCTS.find(p => p.id === id), qty }));
+}
+function cartTotalCents() {
+  return cartItems().reduce((s, i) => s + i.product.priceCents * i.qty, 0);
+}
+function updateCartCount() {
+  $('cart-count').textContent = cartItems().reduce((s, i) => s + i.qty, 0);
+}
+function addToCart(id) {
+  cart[id] = (cart[id] || 0) + 1;
+  updateCartCount();
+}
+
+// ---------- Vistas ----------
+function showView(name) {
+  ['catalog', 'product', 'checkout', 'success'].forEach(v =>
+    $('view-' + v).classList.toggle('hidden', v !== name));
+  window.scrollTo(0, 0);
+}
+
+// ---------- Catálogo ----------
+function renderCatalog() {
+  $('product-grid').innerHTML = PRODUCTS.map(p => `
+    <div class="card">
+      <div class="thumb">Vista 3D</div>
+      <h3>${p.name}</h3>
+      <p>${p.description}</p>
+      <div class="price">${euros(p.priceCents)}</div>
+      <button class="btn-ghost" style="margin-top:10px;width:100%" onclick="openProduct('${p.id}')">Ver en 3D</button>
+    </div>`).join('');
+}
+
+// ---------- Visor Three.js ----------
+const D = 3.2; // distancia inicial fija de la cámara
+let renderer, scene, camera, controls, currentMesh = null, wireframeOn = false;
+const viewerEl = $('viewer');
+const loader = new THREE.STLLoader();
+
+function initViewer() {
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0xf6f9fc);
+
+  camera = new THREE.PerspectiveCamera(45, 1, 0.01, 1000);
+  camera.position.set(0, 0, D); // antes de crear los controles, para que reset() use esta posición
+  camera.lookAt(0, 0, 0);
+
+  renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  viewerEl.appendChild(renderer.domElement);
+  renderer.domElement.addEventListener('contextmenu', e => e.preventDefault());
+
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x8792a2, 0.8));
+  const key = new THREE.DirectionalLight(0xffffff, 0.9);
+  key.position.set(2, 3, 4);
+  scene.add(key);
+  const fill = new THREE.DirectionalLight(0xffffff, 0.4);
+  fill.position.set(-3, -2, -2);
+  scene.add(fill);
+
+  controls = new THREE.TrackballControls(camera, renderer.domElement);
+  controls.rotateSpeed = 2.0;
+  controls.zoomSpeed = 1.2;
+  controls.panSpeed = 0.8;
+  controls.staticMoving = false;
+  controls.dynamicDampingFactor = 0.1;
+
+  window.addEventListener('resize', onResize);
+  animate();
+}
+
+function onResize() {
+  const w = viewerEl.clientWidth, h = viewerEl.clientHeight;
+  if (!w || !h || !renderer) return;
+  renderer.setSize(w, h);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  controls.handleResize();
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+  controls.update(); // necesario para el movimiento y la inercia
+  renderer.render(scene, camera);
+}
+
+function resetView() {
+  controls.reset(); // restaura posición y orientación iniciales
+}
+
+function showLoading(on) {
+  $('loading').classList.toggle('hidden', !on);
+}
+
+function setModel(geometry, color) {
+  if (currentMesh) {
+    scene.remove(currentMesh);
+    currentMesh.geometry.dispose();
+    currentMesh.material.dispose();
+    currentMesh = null;
+  }
+  geometry.center(); // centra el modelo en el origen
+  geometry.computeBoundingSphere();
+  const radius = geometry.boundingSphere.radius || 1;
+  const material = new THREE.MeshStandardMaterial({
+    color, metalness: 0.1, roughness: 0.45, wireframe: wireframeOn
+  });
+  currentMesh = new THREE.Mesh(geometry, material);
+  currentMesh.scale.setScalar(1 / radius); // escalado automático: radio = 1 unidad
+  scene.add(currentMesh);
+  resetView();
+  showLoading(false);
+}
+
+function loadProductModel(p) {
+  showLoading(true);
+  loader.load(
+    p.stl,
+    geom => setModel(geom, p.color),
+    undefined,
+    () => setModel(new THREE.TorusKnotGeometry(0.7, 0.25, 200, 32), p.color) // respaldo si falta el STL
+  );
+}
+
+function openProduct(id) {
+  currentProduct = PRODUCTS.find(p => p.id === id);
+  $('p-name').textContent = currentProduct.name;
+  $('p-desc').textContent = currentProduct.description;
+  $('p-price').textContent = euros(currentProduct.priceCents);
+  $('btn-add').textContent = 'Añadir al carrito';
+  showView('product');
+  onResize(); // el visor ya es visible, ajustar tamaño
+  loadProductModel(currentProduct);
+}
+
+// ---------- Checkout ----------
+function renderCheckout() {
+  const items = cartItems();
+  if (!items.length) {
+    $('summary').innerHTML = '<p>Tu carrito está vacío.</p>';
+  } else {
+    $('summary').innerHTML = items.map(i => `
+      <div class="summary-line">
+        <span>${i.product.name} × ${i.qty}</span>
+        <span>${euros(i.product.priceCents * i.qty)}</span>
+      </div>`).join('');
+  }
+  $('summary-total').textContent = euros(cartTotalCents());
+  $('pay-btn').textContent = 'Pagar ' + euros(cartTotalCents());
+  $('checkout-error').textContent = '';
+  showView('checkout');
+}
+
+$('checkout-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const err = $('checkout-error');
+  const email = $('email').value.trim();
+  const name = $('cc-name').value.trim();
+  const number = $('cc-number').value.replace(/\s/g, '');
+  const exp = $('cc-exp').value.trim();
+  const cvc = $('cc-cvc').value.trim();
+
+  if (!cartItems().length) return err.textContent = 'Tu carrito está vacío.';
+  if (!/^\S+@\S+\.\S+$/.test(email)) return err.textContent = 'Introduce un email válido.';
+  if (!name) return err.textContent = 'Introduce el nombre de la tarjeta.';
+  if (!/^\d{13,19}$/.test(number)) return err.textContent = 'Número de tarjeta no válido.';
+  if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(exp)) return err.textContent = 'Caducidad no válida (MM/AA).';
+  if (!/^\d{3,4}$/.test(cvc)) return err.textContent = 'CVC no válido.';
+
+  // TODO: aquí va el pago real (PaymentIntent en el servidor + Stripe Elements en el cliente).
+  cart = {};
+  updateCartCount();
+  showView('success');
+});
+
+// ---------- Eventos ----------
+$('home-link').addEventListener('click', () => showView('catalog'));
+$('cart-btn').addEventListener('click', renderCheckout);
+$('back-to-catalog').addEventListener('click', () => showView('catalog'));
+$('back-from-checkout').addEventListener('click', () => showView('catalog'));
+$('btn-success-home').addEventListener('click', () => showView('catalog'));
+$('btn-reset').addEventListener('click', resetView);
+
+$('btn-wire').addEventListener('click', () => {
+  wireframeOn = !wireframeOn;
+  if (currentMesh) currentMesh.material.wireframe = wireframeOn;
+  $('btn-wire').textContent = 'Wireframe: ' + (wireframeOn ? 'on' : 'off');
+});
+
+$('btn-add').addEventListener('click', () => {
+  addToCart(currentProduct.id);
+  $('btn-add').textContent = 'Añadido ✓';
+});
+
+$('file-input').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  showLoading(true);
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      setModel(loader.parse(ev.target.result), currentProduct ? currentProduct.color : 0x635bff);
+    } catch (err) {
+      showLoading(false);
+      alert('No se pudo leer el archivo STL.');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+  e.target.value = '';
+});
+
+// ---------- Inicio ----------
+renderCatalog();
+updateCartCount();
+initViewer();
+showView('catalog');
+</script>
+</body>
+</html>
